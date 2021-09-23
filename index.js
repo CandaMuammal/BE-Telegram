@@ -1,46 +1,40 @@
-const express = require('express')
 require('dotenv').config()
-const app = express()
-// const bodyParser = require('body-parser')
-const productRouter = require('./src/router/product')
-const userRouter = require('./src/router/user')
-const historyRouter = require('./src/router/history')
-const categoryRouter = require('./src/router/category')
-const morgan = require('morgan')
-const { v4: uuidv4 } = require('uuid')
+const express = require('express')
+const socket = require('socket.io')
+const http = require("http")
 const cors = require('cors')
-// const setCors = require('./src/middlewares/cors')
+const morgan = require('morgan')
+const moment = require('moment')
+moment.locale('id')
+const app = express()
+const httpServer = http.createServer(app)
+const route = require('./src/router/index')
+const jwt = require('jsonwebtoken')
+const modelHistory = require('./src/models/history')
 const createError = require('http-errors')
-const { route } = require('./src/router/product')
-const router = require('./src/router')
 
-// middleware
+
+// use middle
+app.use(cors())
+app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(morgan('dev'))
-app.use(cors())
-// app.use(setCors())
-// app.use((req, res, next) => {
-//   res.setHeader('Access-Control-Allow-Origin', '*')
-//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE') // If needed
-//   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type') // If needed
-//   res.setHeader('Access-Control-Allow-Credentials', true) // If needed
-//   next()
+
+// app.get('/', (req, res)=>{
+//   res.json({message: 'success'})
 // })
-// app.use(morgan('dev'))
-
-app.use('/v1', router)
+app.use('/v1', route)
 app.use('/file', express.static('./images'))
-
-// app.use('/product', productRouter)
-// app.use('/user', userRouter)
-// app.use('/history', historyRouter)
-// app.use('/category', categoryRouter)
 
 app.use('*', (req, res, next) => {
   const error = new createError.NotFound()
   next(error)
+  // res.status(404).json({
+  //   message: 'url not found'
+  // })
 })
+
+
 
 app.use((err, req, res, next) => {
   console.error(err)
@@ -49,6 +43,74 @@ app.use((err, req, res, next) => {
   })
 })
 
-app.listen(4000, () => {
-  console.log('server is running on port 4000')
+// config socket
+const io = socket(httpServer, {
+  cors: {
+    origin: '*'
+  }
 })
+
+io.use((socket, next)=>{
+  const token = socket.handshake.query.token
+
+  jwt.verify(token, process.env.SECRET_KEY, function (err, decoded) {
+    if (err) {
+      if (err.name === 'TokenExpiredError') {
+        const error = new Error('token expired')
+        error.status = 401
+        return next(error)
+      } else if (err.name === 'JsonWebTokenError') {
+        const error = new Error('token invalid')
+        error.status = 401
+        return next(error)
+      } else {
+        const error = new Error('token not active')
+        error.status = 401
+        return next(error)
+      }
+
+    }
+      socket.userId = decoded.id
+      socket.join(decoded.id)
+      next()
+   
+  });
+})
+
+// use socket
+io.on('connection', (socket)=>{
+  console.log('my user id is ', socket.userId);
+ 
+  socket.on('sendMessage', ({ idReceiver, messageBody}, callback)=>{
+    const dataMessage = {
+      sender_id: socket.userId,
+      receiver_id: idReceiver,
+      messages: messageBody,
+      created_at: new Date()
+    }
+    callback({
+      ...dataMessage,
+      created_at: moment(dataMessage.created_at).format('LT')
+    })
+
+    // save message to database
+    modelHistory.insertHistory(dataMessage)
+      .then(() => {
+        socket.broadcast.to(idReceiver).emit('msgFromBackend', {
+          ...dataMessage,
+          created_at: moment(dataMessage.created_at).format('LT')
+        })
+      })
+  })
+
+  socket.on('disconnect', ()=>{
+    console.log('a device just disconnected ', socket.id);
+  })
+  
+})
+
+
+httpServer.listen(4000, ()=>{
+  console.log('server is running port' + 4000);
+})
+// const app = express()

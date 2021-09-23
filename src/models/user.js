@@ -12,7 +12,7 @@ const insertUser = (data) => {
   })
 }
 
-const getAllUser = () => {
+const getAllUser = ()=>{
   return new Promise((resolve, reject) => {
     connection.query('SELECT * FROM user', (error, result) => {
       if (!error) {
@@ -36,10 +36,49 @@ const searchUser = (email) => {
   })
 }
 
+const updateUser = (id, data) => {
+  return new Promise((resolve, reject) => {
+    connection.query('UPDATE user SET ? WHERE id = ?', [data, id], (error, result) => {
+      if (!error) {
+        resolve(result)
+      } else {
+        reject(error)
+      }
+    })
+  })
+}
+
+const deleteUser = (id) => {
+  return new Promise((resolve, reject) => {
+    connection.query('DELETE FROM user WHERE id = ?', id, (error, result) => {
+      if (!error) {
+        resolve(result)
+      } else {
+        reject(error)
+      }
+    })
+  })
+}
+
+const getUserById = (id) => {
+  return new Promise((resolve, reject) => {
+    connection.query('SELECT * FROM user WHERE id = ?', id, (error, result) => {
+      if (!error) {
+        resolve(result)
+      } else {
+        reject(error)
+      }
+    })
+  })
+}
+
 module.exports = {
   insertUser,
   searchUser,
-  getAllUser
+  getAllUser,
+  updateUser,
+  deleteUser,
+  getUserById
 }
 // const connection = require('../configs/db')
 
@@ -79,29 +118,9 @@ module.exports = {
 //   })
 // }
 
-// const updateUser = (id, data) => {
-//   return new Promise((resolve, reject) => {
-//     connection.query('UPDATE user SET ? WHERE id = ?', [data, id], (error, result) => {
-//       if (!error) {
-//         resolve(result)
-//       } else {
-//         reject(error)
-//       }
-//     })
-//   })
-// }
 
-// const deleteUser = (id) => {
-//   return new Promise((resolve, reject) => {
-//     connection.query('DELETE FROM user WHERE id = ?', id, (error, result) => {
-//       if (!error) {
-//         resolve(result)
-//       } else {
-//         reject(error)
-//       }
-//     })
-//   })
-// }
+
+
 
 // module.exports = {
 //   getAllUser,

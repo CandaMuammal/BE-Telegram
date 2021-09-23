@@ -44,6 +44,13 @@ const responseErr = (res, error) => {
   res.json(resultPrint)
 }
 
+const responseSuccess = (res, statusCode, message, data) => {
+  res.status(statusCode).json({
+    status: statusCode === 200,
+    message,
+    data,
+  });
+};
 
 
 
@@ -52,5 +59,6 @@ module.exports = {
   responseInsert,
   responseUpdate,
   responseDelete,
-  responseErr
+  responseErr,
+  responseSuccess
 }

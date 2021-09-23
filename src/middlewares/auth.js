@@ -1,22 +1,29 @@
 const jwt = require('jsonwebtoken')
 
 const verifyAccess = (req, res, next) => {
-  const token = req.headers.authorization
+  // const token = req.headers.authorization
+  const bearelToken = req.headers.authorization
+  console.log(bearelToken);
+  let token = null
+  if(bearelToken){
+    token = bearelToken.split(" ")[1]
+  }
+ 
   if (!token) {
-    const error = new Error('token needed, please login first')
+    const error = new Error('server need token')
     error.code = 401
     return next(error)
   }
-  const result = token.split(' ')[1]
-  console.log(result)
-  jwt.verify(result, process.env.SECRET_KEY, function (err, decoded) {
+  // const result = token.split(' ')[1]
+  // console.log(result);
+  jwt.verify(token, process.env.SECRET_KEY, function (err, decoded) {
     if (err) {
       if (err.name === 'TokenExpiredError') {
-        const error = new Error('token expired, please login again')
+        const error = new Error('token expired')
         error.status = 401
         return next(error)
       } else if (err.name === 'JsonWebTokenError') {
-        const error = new Error('token invalid, please check your token again')
+        const error = new Error('token invalid')
         error.status = 401
         return next(error)
       } else {
@@ -24,21 +31,13 @@ const verifyAccess = (req, res, next) => {
         error.status = 401
         return next(error)
       }
+
     }
     req.role = decoded.role
-
-    const requireAdmin = (req, response, next) => {
-      if (req.role !== '1') {
-        response.json({ message: 'Access Denied' })
-      } else {
-        next()
-      }
-    }
-
+    req.idUser = decoded.id
     next()
-  })
+  });
 }
 module.exports = {
-  verifyAccess,
   verifyAccess
 }

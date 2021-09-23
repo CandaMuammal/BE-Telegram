@@ -1,14 +1,9 @@
 const express = require('express')
-const router = express.Router()
-const productRouter = require('./product')
-const categoryRouter = require('./category')
+const route = express.Router()
 const userRouter = require('./user')
-const multer = require('../middlewares/multer')
-// app.use('/products', productRouter)
-// app.use('/users', userRouter)
-router
-  .use('/product', productRouter)
+const historyRouter = require('./history')
+route
   .use('/user', userRouter)
-  .use('/category', categoryRouter)
+  .use('/history', historyRouter)
 
-module.exports = router
+module.exports = route

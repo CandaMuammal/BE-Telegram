@@ -1,12 +1,11 @@
 const express = require('express')
 const router = express.Router()
+const { verifyAccess } = require('../middlewares/auth')
 const historyController = require('../controllers/history')
 
 router
-  .get('/', historyController.getAllHistory)
-  .get('/:id', historyController.getHistoryById)
-  .post('/', historyController.insertHistory)
-  .put('/:id', historyController.updateHistory)
-  .delete('/:id', historyController.deleteHistory)
+  .get('/:idReceiver', verifyAccess, historyController.getHistoryById)
 
 module.exports = router
+
+

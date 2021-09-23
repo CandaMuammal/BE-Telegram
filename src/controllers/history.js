@@ -1,103 +1,95 @@
+// const userModel = require("../models/user");
+
+// const history = require("../models/history")
+// const helper = require("../helpers/printHelper");
+
+// exports.sendMessage = async (req, res) => {
+//     const { idFrom, idTo, chat, date } = req.body;
+//     const data = {
+//         idFrom,
+//         idTo,
+//         chat,
+//         date
+//     };
+//     try {
+//         const user = await userModel.findUser(idFrom, "cek pengirim");
+//         if (user < 1) {
+//             helper.responseErr(res, 400, `Cannot find one users with id = ${idFrom}`);
+//             return;
+//         } else {
+//             const receiver = await userModel.findUser(idTo, "cek penerima");
+//             if (receiver < 1) {
+//                 helper.responseErr(res, 400, `Cannot find one users with id = ${idTo}`);
+//                 return;
+//             }
+//             await history.createMessages(data);
+//             helper.responseSuccess(res, 200, "Create Messages successfully", data);
+//         }
+//     } catch (err) {
+//         console.log(err);
+//         helper.responseErr(res, 400, `something wrong`);
+//     }
+// };
+
+// exports.findMessages = async (req, res) => {
+//     const { idFrom, idTo } = req.params;
+
+//     try {
+//         const getMessagesSender = await history.getMessageByidFrom(idFrom);
+//         const getMessagesTarget = await history.getMessageByIdSender(idTo);
+//         const result = [...getMessagesSender, ...getMessagesTarget];
+//         helper.responseSuccess(res, 200, "Find messages successfully", result);
+//     } catch (err) {
+//         if (err.message === "Internal server error") {
+//             helper.responseErr(res, 500, err.message);
+//         }
+//         helper.responseErr(res, 400, err.message);
+//     }
+// };
+
+// exports.deleteHistory = (req, res) => {
+//     try {
+//         const id = req.params.id;
+//         history
+//             .deleteHistoryChat(id)
+//             .then((response) => {
+//                 if (response.affectedRows != 0) {
+//                     // Kalau ada yang terhapus
+//                     helper.responseSuccess(res, 200, "deleting History Success", response);
+//                 } else {
+//                     // Kalau tidak ada yang terhapus
+//                     helper.responseErr(res, 400, "Nothing Deleted, Wrong IDs");
+//                 }
+//             })
+//             .catch((err) => {
+//                 // Kalau ada salah di parameternya
+//                 helper.responseErr(res, 400, "Wrong Parameter Type");
+//             });
+//     } catch (err) {
+//         // Kalau ada salah lainnya
+//         console.log(err.message);
+//         helper.responseErr(res, 500, "Internal Server Error");
+//     }
+// };
+
 const historyModel = require('../models/history')
-const helpers = require('../helpers/helper')
-const createError = require('http-errors')
-const { v4: uuidv4 } = require('uuid')
+const helpers = require('../helpers/helper') 
+// const socket = require('socket.io')
 
-const getAllHistory = (req, res, next) => {
-  const page = req.query.page || 1
-  const limit = req.query.limit || 5
-  const start = (page - 1) * limit
-  historyModel.getAllHistory(start, limit)
-    .then((result) => {
-      const history = result
-      helpers.responseGet(res, history, 200, null, page)
-    })
-    .catch((error) => {
-      const err = new createError.InternalServerError()
-      next(err)
-    })
+const getHistoryById =(req, res)=>{
+  const idReceiver = req.params.idReceiver
+  const idSender = req.idUser
+  console.log('idReceiver', idReceiver);
+  console.log('idSender', idSender);
+  historyModel.getHistoryById(idSender, idReceiver)
+  .then((result)=>{
+    helpers.responseSuccess(res, 200, "Find messages successfully", result)
+  })
+  .catch((err)=>{
+    console.log(err);
+  })
 }
 
-const getHistoryById = (req, res, next) => {
-  const idHistory = req.params.id
-  historyModel.getHistoryById(idHistory)
-    .then((result) => {
-      const history = result
-      helpers.responseGet(res, history, 200, null)
-    })
-    .catch((error) => {
-      const err = new createError.InternalServerError()
-      next(err)
-    })
-}
-
-const insertHistory = (req, res, next) => {
-  const { name, category, price, qty, totalPrice, address, paymentMethod } = req.body
-  const data = {
-    id: uuidv4(),
-    name,
-    category,
-    price,
-    qty,
-    totalPrice,
-    address,
-    paymentMethod,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-
-  historyModel.insertHistory(data)
-    .then((result) => {
-      const history = result
-      helpers.responseInsert(res, history, 200, null)
-    })
-    .catch((error) => {
-      const err = new createError.InternalServerError()
-      next(err)
-    })
-}
-
-const updateHistory = (req, res) => {
-  const id = req.params.id
-  const { name, category, price, qty, totalPrice, address, paymentMethod } = req.body
-  const data = {
-    name,
-    category,
-    qty,
-    price,
-    totalPrice,
-    address,
-    paymentMethod,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-  historyModel.updateHistory(id, data)
-    .then((result) => {
-      const history = result
-      helpers.responseUpdate(res, history, 200, null)
-    })
-    .catch((error) => {
-      const err = new createError.InternalServerError()
-      next(err)
-    })
-}
-
-const deleteHistory = (req, res) => {
-  const id = req.params.id
-  historyModel.deleteHistory(id)
-    .then((result) => {
-      const history = result
-      helpers.responseDelete(res, history, 200, null)
-    })
-    .catch((error) => {
-      const err = new createError.InternalServerError()
-      next(err)
-    })
-}
 module.exports = {
-  getAllHistory,
-  getHistoryById,
-  insertHistory,
-  updateHistory,
-  deleteHistory
+  getHistoryById
 }
