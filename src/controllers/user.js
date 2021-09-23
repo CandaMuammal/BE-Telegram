@@ -92,7 +92,7 @@ const updateUser = (req, res) => {
     username,
     email,
     // password,
-    image: `http://localhost:4000/file/${req.file.filename}`,
+    image: `${process.env.BASE_URL}/file/${req.file.filename}`,
     phone,
     // role,
     // createdAt: new Date(),
