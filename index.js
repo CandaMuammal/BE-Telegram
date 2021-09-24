@@ -5,6 +5,7 @@ const http = require("http")
 const cors = require('cors')
 const morgan = require('morgan')
 const moment = require('moment')
+const PORT = process.env.PORT
 moment.locale('id')
 const app = express()
 const httpServer = http.createServer(app)
@@ -110,7 +111,7 @@ io.on('connection', (socket)=>{
 })
 
 
-httpServer.listen(4000, ()=>{
-  console.log('server is running port' + 4000);
+httpServer.listen(PORT, ()=>{
+  console.log('server is running port' + PORT);
 })
 // const app = express()
