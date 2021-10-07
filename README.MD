@@ -4,6 +4,15 @@
 
 </p>
 
+<p align="center">
+    <br />
+    <br />
+    <br />
+    <a href="https://fe-telegram.vercel.app/login">View Demo</a>
+    ·
+    <a href="https://github.com/CandaMuammal/FE-Telegram/issues">Report Bug</a>
+    ·
+  </p>
 
 ---
 
