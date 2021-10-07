@@ -10,7 +10,7 @@
     <br />
     <a href="https://fe-telegram.vercel.app/login">View Demo</a>
     ·
-    <a href="https://github.com/CandaMuammal/FE-Telegram/issues">Report Bug</a>
+    <a href="https://github.com/CandaMuammal/BE-Telegram/issues">Report Bug</a>
     ·
   </p>
 
